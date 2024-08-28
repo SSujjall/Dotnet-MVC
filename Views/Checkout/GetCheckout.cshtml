@@ -1,0 +1,70 @@
+﻿@model List<NewWeb.Models.Entities.Checkout>
+
+<form method="get" asp-controller="Checkout" asp-action="GetCheckout" class="mb-3">
+    <div class="row">
+        <div class="col-md-3">
+            <select name="sortByName" class="form-select">
+                <option value="">Sort by Name</option>
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="sortByAmount" class="form-select">
+                <option value="">Sort by Amount</option>
+                <option value="asc">Lowest to Highest</option>
+                <option value="desc">Highest to Lowest</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="sortByStatus" class="form-select">
+                <option value="">Filter by Status</option>
+                <option value="Success">Success</option>
+                <option value="Failed">Failed</option>
+                <option value="Pending">Pending</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-secondary">Sort</button>
+        </div>
+    </div>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Amount</th>
+            <th>Remarks</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var checkout in Model)
+        {
+            <tr>
+                <td>@checkout.Id</td>
+                <td>@checkout.Name</td>
+                <td>@checkout.Amount</td>
+                <td>@checkout.Remarks</td>
+                <td>@checkout.Status</td>
+
+                <td>
+                    @if (checkout.Status == "Pending")
+                    {
+                        <form method="post" asp-controller="Checkout" asp-action="UpdateCheckout" asp-route-id="@checkout.Id">
+                            <button type="submit" class="btn btn-success mt-1 w-100">Check Status</button>
+                        </form>
+                    }
+
+                    <form method="post" asp-controller="Checkout" asp-action="DeleteCheckout" asp-route-id="@checkout.Id">
+                        <button type="submit" class="btn btn-danger mt-1 w-100">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

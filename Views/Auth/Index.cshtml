@@ -1,0 +1,28 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+@model MVC.Models.Entities.AuthResponse
+
+<div class="text-center">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Message</th>
+                <th>Server Time</th>
+                <th>Username</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @if(Model != null)
+            {
+                <tr>
+                    <td>@Model.Message</td>
+                    <td>@Model.ServerTime</td>
+                    <td>@Model.Username</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,76 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+@model List<NewWeb.Models.Entities.Student>
+
+<h1>Viewing Students</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Options</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <!--WITHOUT AJAx-->
+        @* @foreach (var student in Model)
+        {
+            <tr>
+                <td>@student.Id</td>
+                <td>@student.Name</td>
+                <td>@student.Address</td>
+                <td class="d-flex flex-column">
+                    <a class="btn btn-success" asp-controller="Student" asp-action="Edit" asp-route-id="@student.Id">Edit</a>
+
+                    <form method="post" asp-controller="Student" asp-action="Delete" asp-route-id="@student.Id">
+                        <button type="submit" class="btn btn-danger mt-1 w-100">Delete</button>
+                    </form>
+
+                </td>
+            </tr>
+        } *@
+
+        <!--WITH AJAx-->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+        @foreach (var student in Model)
+        {
+            <tr id="studentRow_@student.Id">
+                <td>@student.Id</td>
+                <td>@student.Name</td>
+                <td>@student.Address</td>
+                <td class="d-flex flex-column">
+                    <a class="btn btn-success" asp-controller="Student" asp-action="Edit" asp-route-id="@student.Id">Edit</a>
+
+                    <button type="button" class="btn btn-danger mt-1 w-100 deleteStudentButton" data-id="@student.Id">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+    $('.deleteStudentButton').click(function () {
+        var studentId = $(this).data('id');
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("Delete", "Student")',
+            data: { id: studentId },
+            success: function (response) {
+                alert("Student deleted successfully!");
+                $('#studentRow_' + studentId).remove(); // Remove the row from the table
+            },
+            error: function (xhr, status, error) {
+                alert("An error occurred while deleting the student.");
+            }
+        });
+    });
+</script>

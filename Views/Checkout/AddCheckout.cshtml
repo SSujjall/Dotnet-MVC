@@ -1,0 +1,28 @@
+﻿@model NewWeb.Models.Entities.Checkout
+
+
+
+<h2>Add Values</h2>
+
+<form class="d-flex flex-column align-items-center" asp-action="AddCheckout" method="post">
+    <div class="text-center w-100">
+        <label class="form-label">Enter name:</label>
+        <div class="w-50 mx-auto">
+            <input class="form-control" asp-for="Name" required />
+        </div>
+
+        <label class="form-label mt-3">Enter Amount:</label>
+        <div class="w-50 mx-auto">
+            <input class="form-control" asp-for="Amount" required />
+        </div>
+
+        <label class="form-label mt-3">Enter Remarks:</label>
+        <div class="w-50 mx-auto">
+            <input class="form-control" asp-for="Remarks" required />
+        </div>
+    </div>
+
+    <div class="text-center w-100">
+        <button type="submit" class="btn btn-success w-50 mt-2 mb-2">Save</button>
+    </div>
+</form>
