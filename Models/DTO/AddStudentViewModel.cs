@@ -1,4 +1,4 @@
-﻿namespace NewWeb.Models
+﻿namespace MVC.Models.DTO
 {
     public class AddStudentViewModel
     {

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
+using MVC.Models.DTO;
 using NewWeb.Data;
-using NewWeb.Models;
 using NewWeb.Models.Entities;
 
 namespace NewWeb.Controllers

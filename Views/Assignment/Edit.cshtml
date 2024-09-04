@@ -1,0 +1,66 @@
+﻿@using MVC.Models.Entities
+@model Assignment
+
+<style>
+    .main-form {
+        min-width: 50%;
+        max-width: 50%;
+    }
+</style>
+
+<div class="text-center">
+    <h2>Edit</h2>
+
+
+    @if (Model is null)
+    {
+        <p>No Students Found</p>
+    }
+    else
+    {
+        <!-- With AJax-->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+        <form id="editForm">
+            <section class="Add-Container d-flex justify-content-center">
+                <div class="form-control main-form">
+
+                    <div class="mt-3">
+                        <label class="form-label">Id</label>
+                        <input type="text" class="form-control" asp-for="Id" readonly />
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-control" asp-for="Title" required />
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label">DueDate</label>
+                        <input type="date" class="form-control" asp-for="DueDate" required />
+                    </div>
+
+                    <button type="button" id="editButton" class="btn btn-success w-50 mt-2">Save</button>
+                </div>
+            </section>
+        </form>
+    }
+</div>
+
+<script>
+    $('#editButton').click(function () {
+        var formData = $('#editForm').serialize();
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("EditAssignment", "Assignment")',
+            data: formData,
+            success: function (response) {
+                alert("Edited Successfully!");
+            },
+            error: function (xhr, status, error) {
+                alert("An error occurred while editing the Assignment!");
+            }
+        });
+    });
+</script>
