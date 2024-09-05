@@ -6,6 +6,19 @@
         min-width: 50%;
         max-width: 50%;
     }
+
+    .select2-container {
+        z-index: 9999;
+    }
+
+    .select2-container--open {
+        z-index: 9999;
+    }
+
+    .select2-dropdown {
+        z-index: 9999;
+        position: relative;
+    }
 </style>
 
 <!-----------------------------------------------------------------MODAL CONTAINERS------------------------------------------------------------------->
@@ -151,13 +164,52 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
 <script>
-    // Initialize Select2 for multi-select dropdown
+    // Initialize Select2 for multi-select dropdown //
     $('#filterStudentNames').select2({
         placeholder: 'Select students',
-        width: '100%'
+        width: '100%',
+        templateResult: formatOption,
+        templateSelection: formatSelection
     });
 
-    // Show Toast Notification
+    // When selected, the checkbox in the dropdown is checked //
+    function formatOption(option) {
+        if (!option.id) { return option.text; }
+        return $('<span><input type="checkbox" class="select2-checkbox" ' + (option.selected ? 'checked' : '') + '/> ' + option.text + '</span>');
+    }
+
+    // When not selected, the checkbox in the dropdown is unchecked //
+    function formatSelection(option) {
+        return option.text;
+    }
+
+
+
+
+    // Filter and Search functionality
+    $('#searchButton').click(function () {
+        var selectedStudentIds = $('#filterStudentNames').val();
+        var assignmentTitle = $('#filterAssignmentTitle').val().toLowerCase();
+
+        $('#assignmentsTable tbody tr').each(function () {
+            var studentId = $(this).data('student-id');
+            var assignmentTitleText = $(this).find('td:eq(1)').text().toLowerCase();
+
+            var studentMatch = selectedStudentIds.length === 0 || selectedStudentIds.includes(studentId);
+            var assignmentMatch = assignmentTitle === "" || assignmentTitleText.indexOf(assignmentTitle) !== -1;
+
+            if (studentMatch && assignmentMatch) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+
+
+
+
+    // Show Toast Notification //
     function showToast(message, success = true) {
         var toastElement = $('#notificationToast');
         var toastMessage = $('#toastText');
@@ -174,6 +226,9 @@
         toast.show();
     }
 
+
+
+
     // Show Filter Modal
     $('#filterButton').click(function () {
         $('#filterModal').modal('show');
@@ -183,6 +238,9 @@
     $('#dismissFilterModal').click(function () {
         $('#filterModal').modal('hide');
     });
+
+
+
 
     // Add Submission
     $('#addSubmissionButton').click(function () {
@@ -217,6 +275,9 @@
         });
     });
 
+
+
+
     // Variables For Delete Confirmation
     var studentIdToDelete, assignmentIdToDelete;
 
@@ -242,26 +303,6 @@
             error: function () {
                 showToast("An error occurred while deleting the submission.", false);
                 $('#confirmDeleteModal').modal('hide');
-            }
-        });
-    });
-
-    // Filter and Search functionality
-    $('#searchButton').click(function () {
-        var selectedStudentIds = $('#filterStudentNames').val();
-        var assignmentTitle = $('#filterAssignmentTitle').val().toLowerCase();
-
-        $('#assignmentsTable tbody tr').each(function () {
-            var studentId = $(this).data('student-id');
-            var assignmentTitleText = $(this).find('td:eq(1)').text().toLowerCase();
-
-            var studentMatch = selectedStudentIds.length === 0 || selectedStudentIds.includes(studentId);
-            var assignmentMatch = assignmentTitle === "" || assignmentTitleText.indexOf(assignmentTitle) !== -1;
-
-            if (studentMatch && assignmentMatch) {
-                $(this).show();
-            } else {
-                $(this).hide();
             }
         });
     });
