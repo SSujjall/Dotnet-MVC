@@ -46,35 +46,35 @@ namespace MVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(StudentAssignmentDTO model)
         {
-            var submission = new StudentAssignment
+            foreach(var studentId in model.StudentIds)
             {
-                StudentId = model.StudentId,
-                AssignmentId = model.AssignmentId,
-                SubmissionDate = model.SubmissionDate,
-            };
+                var submission = new StudentAssignment
+                {
+                    StudentId = studentId,
+                    AssignmentId = model.AssignmentId,
+                    SubmissionDate = model.SubmissionDate,
+                };
 
-            await _dbContext.StudentAssignments.AddAsync(submission);
+                await _dbContext.StudentAssignments.AddAsync(submission);
+            }    
+
             await _dbContext.SaveChangesAsync();
 
-            var result = new StudentAssignmentDTO
-            {
-                StudentId = model.StudentId,
-                StudentName = (await _dbContext.Students.FindAsync(model.StudentId)).Name,
-                AssignmentId = model.AssignmentId,
-                AssignmentTitle = (await _dbContext.Assignments.FindAsync(model.AssignmentId)).Title,
-                DueDate = (await _dbContext.Assignments.FindAsync(model.AssignmentId)).DueDate,
-                SubmissionDate = model.SubmissionDate,
-            };
+            // Return the added submissions to the view.
+            var addedSubmissions = from studentId in model.StudentIds
+                                   let student = _dbContext.Students.Find(studentId)
+                                   let assignment = _dbContext.Assignments.Find(model.AssignmentId)
+                                   select new
+                                   {
+                                       studentId,
+                                       studentName = student.Name,
+                                       assignmentId = model.AssignmentId,
+                                       assignmentTitle = assignment.Title,
+                                       dueDate = assignment.DueDate.ToString("M/d/yyyy"),
+                                       submissionDate = model.SubmissionDate.ToString("M/d/yyyy")
+                                   };
 
-            return Json(new
-            {
-                studentId = result.StudentId,
-                studentName = result.StudentName,
-                assignmentId = result.AssignmentId,
-                assignmentTitle = result.AssignmentTitle,
-                dueDate = result.DueDate.ToString("M/d/yyyy"),
-                submissionDate = result.SubmissionDate.ToString("M/d/yyyy")
-            });
+            return Json(addedSubmissions);
         }
 
         [HttpPost]
