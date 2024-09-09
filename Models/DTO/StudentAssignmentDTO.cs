@@ -5,8 +5,8 @@ namespace MVC.Models.DTO
 {
     public class StudentAssignmentDTO
     {
-        public Guid StudentId { get; set; }
-        public List<Guid> StudentIds { get; set; }
+        public int StudentId { get; set; }
+        public List<int> StudentIds { get; set; }
         public string StudentName { get; set; }
 
         public int AssignmentId { get; set; }

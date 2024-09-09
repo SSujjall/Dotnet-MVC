@@ -8,7 +8,7 @@ using NewWeb.Data;
 
 #nullable disable
 
-namespace NewWeb.Migrations
+namespace MVC.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -44,8 +44,8 @@ namespace NewWeb.Migrations
 
             modelBuilder.Entity("MVC.Models.Entities.StudentAssignment", b =>
                 {
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
 
                     b.Property<int>("AssignmentId")
                         .HasColumnType("int");
@@ -88,9 +88,11 @@ namespace NewWeb.Migrations
 
             modelBuilder.Entity("NewWeb.Models.Entities.Student", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
                         .IsRequired()

@@ -48,7 +48,7 @@ namespace NewWeb.Controllers
 
         //Edit
         [HttpGet]
-        public async Task<IActionResult> Edit(Guid id)
+        public async Task<IActionResult> Edit(int id)
         {
             var student = await _dbContext.Students.FindAsync(id);
 
@@ -74,7 +74,7 @@ namespace NewWeb.Controllers
 
         //Deleting data
         [HttpPost]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(int id)
         {
             var student = await _dbContext.Students.FirstOrDefaultAsync(x => x.Id == id);
 

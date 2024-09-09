@@ -9,11 +9,11 @@ using NewWeb.Data;
 
 #nullable disable
 
-namespace NewWeb.Migrations
+namespace MVC.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240904043150_StudentAssignmentAdded")]
-    partial class StudentAssignmentAdded
+    [Migration("20240909082647_GuidToIntForStudent")]
+    partial class GuidToIntForStudent
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -42,13 +42,13 @@ namespace NewWeb.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Assignment");
+                    b.ToTable("Assignments");
                 });
 
             modelBuilder.Entity("MVC.Models.Entities.StudentAssignment", b =>
                 {
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
 
                     b.Property<int>("AssignmentId")
                         .HasColumnType("int");
@@ -91,9 +91,11 @@ namespace NewWeb.Migrations
 
             modelBuilder.Entity("NewWeb.Models.Entities.Student", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
                         .IsRequired()

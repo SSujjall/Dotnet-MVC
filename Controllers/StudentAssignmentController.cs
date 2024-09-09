@@ -78,7 +78,7 @@ namespace MVC.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Delete(Guid studentId, int assignmentId)
+        public async Task<IActionResult> Delete(int studentId, int assignmentId)
         {
             var submission = await _dbContext.StudentAssignments
                .FirstOrDefaultAsync(sa => sa.StudentId == studentId && sa.AssignmentId == assignmentId);

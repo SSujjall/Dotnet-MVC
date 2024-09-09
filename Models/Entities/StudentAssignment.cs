@@ -5,7 +5,7 @@ namespace MVC.Models.Entities
 {
     public class StudentAssignment
     {
-        public Guid StudentId { get; set; }
+        public int StudentId { get; set; }
         public virtual Student Student { get; set; } // Navigation property
 
         public int AssignmentId { get; set; }
