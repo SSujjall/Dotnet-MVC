@@ -1,0 +1,32 @@
+﻿@model IEnumerable<MVC.Models.Entities.ListData>
+
+<h2>Lists of the user</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>List Id</th>
+            <th>List Name</th>
+            <th>User Id</th>
+            <th>Created At</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.id</td>
+                <td>@item.listName</td>
+                <td>@item.userId</td>
+                <td>@item.createdAt</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Logout" class="btn btn-danger">Logout</a>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-info">@TempData["Message"]</div>
+}
