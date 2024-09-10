@@ -1,0 +1,55 @@
+﻿@{
+    ViewData["Title"] = "User Details";
+}
+
+<h2>User Details</h2>
+
+<p>
+    Username: <span id="username">Not loaded</span>
+</p>
+
+<button id="getUserDetailButton" class="btn btn-primary">Get User Details</button>
+<button id="logoutButton" class="btn btn-danger">Logout</button>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-info">@TempData["Message"]</div>
+}
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#getUserDetailButton').click(function () {
+                $.ajax({
+                    url: '@Url.Action("GetUserDetailApi", "BearerAuth")',
+                    type: 'GET',
+                    success: function (response) {
+                        if (response.success) {
+                            $('#username').text(response.username);
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        alert('An error occurred: ' + error);
+                    }
+                });
+            });
+
+            $('#logoutButton').click(function () {
+                $.ajax({
+                    url: '@Url.Action("Logout", "BearerAuth")',
+                    type: 'POST',
+                    success: function (response) {
+                        // Redirect to the login page
+                        window.location.href = '@Url.Action("Login", "BearerAuth")';
+                    },
+                    error: function (xhr, status, error) {
+                        alert('An error occurred: ' + error);
+                    }
+                });
+            });
+        });
+    </script>
+}

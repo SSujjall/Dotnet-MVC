@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using MVC.Models.DTO;
 using MVC.Models.Entities;
@@ -10,10 +11,17 @@ namespace MVC.Controllers
 {
     public class BearerAuthController : Controller
     {
-        private readonly string baseUrl = "https://localhost:7077/api";
+        private readonly string baseUrl = "https://localhost:7198";
 
         public IActionResult Login()
         {
+            var token = HttpContext.Session.GetString("JWToken");
+            if (!string.IsNullOrEmpty(token))
+            {
+                TempData["Message"] = "Login successful!";
+                return RedirectToAction("GetUserDetail"); // Redirect if logged in
+            }
+
             return View();
         }
 
@@ -25,7 +33,7 @@ namespace MVC.Controllers
                 var json = JsonConvert.SerializeObject(userLogin);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await client.PostAsync($"{baseUrl}/Auth/Login", content);
+                var response = await client.PostAsync($"{baseUrl}/User/Login", content);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -36,7 +44,8 @@ namespace MVC.Controllers
                     HttpContext.Session.SetString("JWToken", tokenResponse.data.token);
 
                     TempData["Message"] = "Login successful!";
-                    return RedirectToAction("GetAllList");
+                    //return RedirectToAction("GetAllList");
+                    return RedirectToAction("GetUserDetail");
                 }
                 else
                 {
@@ -46,8 +55,48 @@ namespace MVC.Controllers
             }
         }
 
+
+        //// This was for the GetAllList method in the ListController of the ToDo Web API (not for the other Web API)
+        //[HttpGet]
+        //public async Task<IActionResult> GetAllList()
+        //{
+        //    var token = HttpContext.Session.GetString("JWToken");
+
+        //    if (string.IsNullOrEmpty(token))
+        //    {
+        //        TempData["Message"] = "You need to log in first.";
+        //        return RedirectToAction("Index");
+        //    }
+
+        //    using (var client = new HttpClient())
+        //    {
+        //        // Set the Bearer token in the request header
+        //        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        //        var response = await client.GetAsync($"{baseUrl}/List/GetAllList");
+
+        //        if (response.IsSuccessStatusCode)
+        //        {
+        //            var result = await response.Content.ReadAsStringAsync();
+        //            var listResponse = JsonConvert.DeserializeObject<ListResponse>(result);
+
+        //            return View(listResponse.data); // Pass the list of ListData to the view
+        //        }
+        //        else
+        //        {
+        //            TempData["Message"] = "Failed to retrieve the list!";
+        //            return RedirectToAction("Login");
+        //        }
+        //    }
+        //}
+
+        public IActionResult GetUserDetail()
+        {
+            return View();
+        }
+
         [HttpGet]
-        public async Task<IActionResult> GetAllList()
+        public async Task<IActionResult> GetUserDetailApi()
         {
             var token = HttpContext.Session.GetString("JWToken");
 
@@ -57,24 +106,35 @@ namespace MVC.Controllers
                 return RedirectToAction("Index");
             }
 
+            // Decode the JWT token to extract the UserId
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "UserId");
+
+            if (userIdClaim == null)
+            {
+                return Json(new { success = false, message = "Failed to retrieve user information from token!" });
+            }
+
+            var id = userIdClaim.Value;
+
             using (var client = new HttpClient())
             {
                 // Set the Bearer token in the request header
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                var response = await client.GetAsync($"{baseUrl}/List/GetAllList");
+                var response = await client.GetAsync($"{baseUrl}/User/GetUserInfo/{id}");
 
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadAsStringAsync();
-                    var listResponse = JsonConvert.DeserializeObject<ListResponse>(result);
+                    var res = JsonConvert.DeserializeObject<UserResponse>(result);
 
-                    return View(listResponse.data); // Pass the list of ListData to the view
+                    return Json(new { success = true, username = res?.Data?.Username });
                 }
                 else
                 {
-                    TempData["Message"] = "Failed to retrieve the list!";
-                    return RedirectToAction("Login");
+                    return Json(new { success = false, message = "Failed to retrieve user details!" });
                 }
             }
         }
@@ -82,6 +142,8 @@ namespace MVC.Controllers
         public async Task<IActionResult> Logout()
         {
             HttpContext.Session.Remove("JWToken");
+            HttpContext.Session.Remove("Username");
+            Response.Cookies.Delete("JWToken");
             TempData["Message"] = "Logged out successfully!";
             return RedirectToAction("Login");
         }
