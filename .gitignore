@@ -25,6 +25,7 @@ nupkg/
 *.user
 *.userosscache
 *.sln.docstates
+[Aa]ppsettings.json
 
 # Build results
 [Dd]ebug/

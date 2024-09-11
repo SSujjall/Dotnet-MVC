@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using MVC.Models.DTO;
 using MVC.Models.Entities;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Text;
 
 namespace MVC.Controllers
@@ -89,6 +92,88 @@ namespace MVC.Controllers
         //        }
         //    }
         //}
+
+        [HttpGet]
+        public IActionResult GoogleLogin()
+        {
+            var redirectUrl = Url.Action("GoogleResponse", "BearerAuth");
+            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+        }
+
+        public async Task<IActionResult> GoogleResponse()
+        {
+            var result = await HttpContext.AuthenticateAsync("Google");
+
+            if (result?.Principal == null)
+                return RedirectToAction(nameof(Login));
+
+            var claims = result.Principal.Identities
+                            .FirstOrDefault().Claims
+                            .Select(claim => new
+                            {
+                                claim.Issuer,
+                                claim.OriginalIssuer,
+                                claim.Type,
+                                claim.Value
+                            });
+
+            var userLogin = new UserLogin
+            {
+                Username = claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value,
+                Password = claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value // send the unique name idenfier from the claims as password.
+            };
+
+            var token = await RegisterOrLoginUser(userLogin);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                HttpContext.Session.SetString("JWToken", token);
+                return RedirectToAction("GetUserDetail");
+            }
+            else
+            {
+                TempData["Message"] = "Login failed!";
+                return RedirectToAction("Login");
+            }
+        }
+
+        private async Task<string> RegisterOrLoginUser(UserLogin userLogin)
+        {
+            using (var client = new HttpClient())
+            {
+                // Register User
+                var content = new StringContent(JsonConvert.SerializeObject(userLogin), Encoding.UTF8, "application/json");
+                var registerResponse = await client.PostAsync($"{baseUrl}/User/Register", content);
+                var registerResult = await registerResponse.Content.ReadAsStringAsync();
+
+                // Check if registration was successful (first status code, then if the return message from api contains 'failed' string)
+                // Check the api response from the above registerResult variable hai
+                if (registerResponse.IsSuccessStatusCode && !registerResult.Contains("failed"))
+                {
+                    // Now Login after registration
+                    var loginResponse = await client.PostAsync($"{baseUrl}/User/Login", new StringContent(JsonConvert.SerializeObject(userLogin), Encoding.UTF8, "application/json"));
+                    if (loginResponse.IsSuccessStatusCode)
+                    {
+                        var result = await loginResponse.Content.ReadAsStringAsync();
+                        var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(result);
+                        return tokenResponse.data.token;
+                    }
+                }
+                else //user already exists
+                {
+                    // Check if the user already exists
+                    var loginResponse = await client.PostAsync($"{baseUrl}/User/Login", new StringContent(JsonConvert.SerializeObject(userLogin), Encoding.UTF8, "application/json"));
+                    if (loginResponse.IsSuccessStatusCode)
+                    {
+                        var result = await loginResponse.Content.ReadAsStringAsync();
+                        var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(result);
+                        return tokenResponse.data.token;
+                    }
+                }
+            }
+            return null;
+        }
 
         public IActionResult GetUserDetail()
         {
