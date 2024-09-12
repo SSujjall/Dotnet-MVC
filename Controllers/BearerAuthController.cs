@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -94,6 +95,57 @@ namespace MVC.Controllers
         //}
 
         [HttpGet]
+        public IActionResult FacebookLogin()
+        {
+            var redirectUrl = Url.Action("FacebookResponse", "BearerAuth");
+            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+            return Challenge(properties, FacebookDefaults.AuthenticationScheme);
+        }
+
+        public async Task<IActionResult> FacebookResponse()
+        {
+            var result = await HttpContext.AuthenticateAsync("Facebook");
+
+            if (result?.Principal == null)
+                return RedirectToAction(nameof(Login));
+
+            var claims = result.Principal.Identities
+                            .FirstOrDefault().Claims
+                            .Select(claim => new
+                            {
+                                claim.Issuer,
+                                claim.OriginalIssuer,
+                                claim.Type,
+                                claim.Value
+                            });
+
+            var nameIdentifier = claims.Where(x => x.Type == ClaimTypes.NameIdentifier).FirstOrDefault()?.Value;
+            var rawName = claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value.ToLower();
+            var filteredName = rawName?.Replace(" ", "");
+
+
+            var userLogin = new UserLogin
+            {
+                Username = $"{filteredName}.{nameIdentifier}",
+                Password = claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value // send the unique name idenfier from the claims as password.
+            };
+
+            var token = await RegisterOrLoginUser(userLogin);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                HttpContext.Session.SetString("JWToken", token);
+                return RedirectToAction("GetUserDetail");
+            }
+            else
+            {
+                TempData["Message"] = "Login failed!";
+                return RedirectToAction("Login");
+            }
+        }
+
+
+        [HttpGet]
         public IActionResult GoogleLogin()
         {
             var redirectUrl = Url.Action("GoogleResponse", "BearerAuth");
@@ -120,7 +172,7 @@ namespace MVC.Controllers
 
             var userLogin = new UserLogin
             {
-                Username = claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value,
+                Username = claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value.ToLower(),
                 Password = claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value // send the unique name idenfier from the claims as password.
             };
 
