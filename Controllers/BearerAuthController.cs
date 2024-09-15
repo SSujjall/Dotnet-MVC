@@ -194,34 +194,19 @@ namespace MVC.Controllers
         {
             using (var client = new HttpClient())
             {
-                // Register User
+                // Register User if not registered
                 var content = new StringContent(JsonConvert.SerializeObject(userLogin), Encoding.UTF8, "application/json");
                 var registerResponse = await client.PostAsync($"{baseUrl}/User/Register", content);
+                
+                // Checking the response contents
                 var registerResult = await registerResponse.Content.ReadAsStringAsync();
 
-                // Check if registration was successful (first status code, then if the return message from api contains 'failed' string)
-                // Check the api response from the above registerResult variable hai
-                if (registerResponse.IsSuccessStatusCode && !registerResult.Contains("failed"))
+                var loginResponse = await client.PostAsync($"{baseUrl}/User/Login", new StringContent(JsonConvert.SerializeObject(userLogin), Encoding.UTF8, "application/json"));
+                if (loginResponse.IsSuccessStatusCode)
                 {
-                    // Now Login after registration
-                    var loginResponse = await client.PostAsync($"{baseUrl}/User/Login", new StringContent(JsonConvert.SerializeObject(userLogin), Encoding.UTF8, "application/json"));
-                    if (loginResponse.IsSuccessStatusCode)
-                    {
-                        var result = await loginResponse.Content.ReadAsStringAsync();
-                        var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(result);
-                        return tokenResponse.data.token;
-                    }
-                }
-                else //user already exists
-                {
-                    // Check if the user already exists
-                    var loginResponse = await client.PostAsync($"{baseUrl}/User/Login", new StringContent(JsonConvert.SerializeObject(userLogin), Encoding.UTF8, "application/json"));
-                    if (loginResponse.IsSuccessStatusCode)
-                    {
-                        var result = await loginResponse.Content.ReadAsStringAsync();
-                        var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(result);
-                        return tokenResponse.data.token;
-                    }
+                    var result = await loginResponse.Content.ReadAsStringAsync();
+                    var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(result);
+                    return tokenResponse.data.token;
                 }
             }
             return null;
@@ -243,7 +228,7 @@ namespace MVC.Controllers
                 return RedirectToAction("Index");
             }
 
-            // Decode the JWT token to extract the UserId
+            // Decode the JWT token to extract the UserId (claims bata haina direct token string ma liyera decode gareko)
             var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(token);
             var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "UserId");
