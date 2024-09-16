@@ -208,7 +208,7 @@
 
     // Filter and Search functionality
     $('#searchButton').click(function () {
-        var selectedStudentIds = $('#filterStudentNames').val();
+        var selectedStudentIds = $('#filterStudentNames').val().map(Number);
         var assignmentTitle = $('#filterAssignmentTitle').val().toLowerCase();
 
         $('#assignmentsTable tbody tr').each(function () {

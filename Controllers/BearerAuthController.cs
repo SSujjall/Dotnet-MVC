@@ -49,7 +49,8 @@ namespace MVC.Controllers
 
                     TempData["Message"] = "Login successful!";
                     //return RedirectToAction("GetAllList");
-                    return RedirectToAction("GetUserDetail");
+                    return RedirectToAction("GetStudents", "Student");
+                    //return RedirectToAction("GetUserDetail");
                 }
                 else
                 {

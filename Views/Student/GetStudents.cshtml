@@ -42,12 +42,14 @@
 
         @foreach (var student in Model)
         {
+            var encryptedId = MVC.Helper.EncryptionHelper.Base64Encode(student.Id.ToString());
+
             <tr id="studentRow_@student.Id">
                 <td>@student.Id</td>
                 <td>@student.Name</td>
                 <td>@student.Address</td>
                 <td class="d-flex flex-column">
-                    <a class="btn btn-success" asp-controller="Student" asp-action="Edit" asp-route-id="@student.Id">Edit</a>
+                    <a class="btn btn-success" asp-controller="Student" asp-action="Edit" asp-route-id="@encryptedId">Edit</a>
 
                     <button type="button" class="btn btn-danger mt-1 w-100 deleteStudentButton" data-id="@student.Id">Delete</button>
                 </td>

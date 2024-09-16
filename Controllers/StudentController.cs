@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
+using MVC.Helper;
 using MVC.Models.DTO;
 using NewWeb.Data;
 using NewWeb.Models.Entities;
@@ -48,9 +49,12 @@ namespace NewWeb.Controllers
 
         //Edit
         [HttpGet]
-        public async Task<IActionResult> Edit(int id)
+        public async Task<IActionResult> Edit(string id)
         {
-            var student = await _dbContext.Students.FindAsync(id);
+            var decryptedId = EncryptionHelper.Base64Decode(id);
+            var studentId = int.Parse(decryptedId);
+
+            var student = await _dbContext.Students.FindAsync(studentId);
 
             return View(student);
         }
